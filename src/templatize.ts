@@ -1,4 +1,4 @@
-import isObjectLike from "lodash/isObjectLike"
+import { isObjectLike } from "lodash-es"
 
 export const templatize = (template: string, replacements: any[]): string => {
   const message = replacements.reduce((message: string, replacement, index) => {

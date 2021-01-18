@@ -1,5 +1,5 @@
 import { templatize } from "./templatize"
-import get from "lodash/get"
+import { get } from "lodash-es"
 import { Translations } from "./types"
 
 export const translate = (

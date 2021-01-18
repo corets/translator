@@ -5,8 +5,7 @@ import {
   TranslatorCallback,
 } from "./types"
 import { translate } from "./translate"
-import compact from "lodash/compact"
-import merge from "lodash/merge"
+import { compact, merge } from "lodash-es"
 import { createValue, ObservableValue } from "@corets/value"
 
 export class Translator implements ObservableTranslator {
