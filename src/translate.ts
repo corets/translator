@@ -9,16 +9,14 @@ export const translate = (
   replacements: any[] = [],
   fallbackLanguage?: string
 ) => {
-  if (language in locales) {
-    let translation = get(locales[language], key)
+  let translation = get(locales[language], key)
 
-    if (translation === undefined && fallbackLanguage !== undefined) {
-      translation = get(locales[fallbackLanguage], key)
-    }
+  if (translation === undefined && fallbackLanguage !== undefined) {
+    translation = get(locales[fallbackLanguage], key)
+  }
 
-    if (typeof translation === "string") {
-      return templatize(translation, replacements)
-    }
+  if (typeof translation === "string") {
+    return templatize(translation, replacements)
   }
 
   return `{ ${language}.${key} }`

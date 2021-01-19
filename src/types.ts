@@ -17,8 +17,13 @@ export interface ObservableTranslator {
   addTranslations(translations: Translations): void
   addTranslationsForLanguage(language: string, translations: object): void
 
-  get(key: string, replacements?: any[], language?: string): string
-  has(key: string, language?: string): boolean
+  get(
+    key: string,
+    replacements?: any[],
+    language?: string,
+    fallbackLanguage?: string
+  ): string
+  has(key: string, language?: string, fallbackLanguage?: string): boolean
 
   listen(callback: TranslatorCallback, notifyImmediately?: boolean)
   scope(scope: string): TranslateFunction
