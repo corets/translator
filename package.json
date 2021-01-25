@@ -1,6 +1,6 @@
 {
   "name": "@corets/translator",
-  "version": "0.0.1-4",
+  "version": "0.0.1-5",
   "author": "Maxim Kott",
   "license": "MIT",
   "main": "dist/index.js",
@@ -33,9 +33,9 @@
     "lodash-es": "^4.17.20"
   },
   "devDependencies": {
+    "@corets/promise-helpers": "^0.0.1-2",
     "@types/jest": "^25.1.4",
     "@types/lodash-es": "^4.17.4",
-    "@corets/promise-helpers": "^0.0.1-2",
     "jest": "^25.1.0",
     "lodash": "^4.17.20",
     "microbundle": "^0.13.0",
