@@ -1,10 +1,6 @@
 import { CreateTranslator } from "./types"
 import { Translator } from "./Translator"
 
-export const createTranslator: CreateTranslator = (
-  translations,
-  language,
-  fallbackLanguage
-) => {
-  return new Translator(translations, language, fallbackLanguage)
+export const createTranslator: CreateTranslator = (translations, options) => {
+  return new Translator(translations, options)
 }

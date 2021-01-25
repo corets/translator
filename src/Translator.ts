@@ -1,34 +1,46 @@
 import {
   ObservableTranslator,
   TranslateFunction,
+  TranslatorGetOptions,
   Translations,
   TranslatorCallback,
+  TranslatorConfig,
+  TranslatorHasOptions,
+  TranslateFunctionFactoryOptions,
+  TranslatorReplacements,
+  TranslatorOptions,
+  TranslatorFormatter,
+  TranslatorInterpolator,
 } from "./types"
-import { translate } from "./translate"
-import { compact, merge } from "lodash-es"
+import { compact, get, merge } from "lodash-es"
 import { createValue, ObservableValue } from "@corets/value"
+import { interpolator } from "./interpolator"
+import { formatter } from "./formatter"
+import { placeholder } from "./placeholder"
 
 export class Translator implements ObservableTranslator {
-  language: ObservableValue<string>
-  fallbackLanguage: ObservableValue<string | undefined>
+  configuration: ObservableValue<TranslatorConfig>
   translations: ObservableValue<Translations>
 
-  constructor(
-    translations: Translations,
-    language: string,
-    fallbackLanguage?: string
-  ) {
-    this.language = createValue(language)
+  constructor(translations: Translations, options: TranslatorOptions) {
+    this.configuration = createValue({
+      language: options.language,
+      fallbackLanguage: options?.fallbackLanguage,
+      templatize: options?.templatize ?? true,
+      formatter: options?.formatter ?? formatter,
+      interpolator: options?.interpolator ?? interpolator,
+      placeholder: options?.placeholder ?? placeholder,
+    })
+
     this.translations = createValue(translations)
-    this.fallbackLanguage = createValue(fallbackLanguage)
   }
 
   getLanguage(): string {
-    return this.language.get()
+    return this.configuration.get().language
   }
 
   setLanguage(language: string): void {
-    this.language.set(language)
+    this.configuration.set({ ...this.configuration.get(), language })
   }
 
   getLanguages(): string[] {
@@ -63,59 +75,127 @@ export class Translator implements ObservableTranslator {
   }
 
   getFallbackLanguage(): string | undefined {
-    return this.fallbackLanguage.get()
+    return this.configuration.get().fallbackLanguage
   }
 
-  setFallbackLanguage(language: string): void {
-    this.fallbackLanguage.set(language)
+  setFallbackLanguage(fallbackLanguage: string): void {
+    this.configuration.set({ ...this.configuration.get(), fallbackLanguage })
   }
 
-  get(
-    key: string,
-    replacements?: any[],
-    language?: string,
-    fallbackLanguage?: string
-  ): string {
-    language = language ?? this.getLanguage()
-    fallbackLanguage = fallbackLanguage ?? this.getFallbackLanguage()
+  getFormatter(): TranslatorFormatter {
+    return this.configuration.get().formatter
+  }
 
-    return translate(
-      this.translations.get(),
-      language,
-      key,
-      replacements,
-      fallbackLanguage
+  setFormatter(formatter: TranslatorFormatter) {
+    this.configuration.set({ ...this.configuration.get(), formatter })
+  }
+
+  getInterpolator(): TranslatorInterpolator {
+    return this.configuration.get().interpolator
+  }
+
+  setInterpolator(interpolator: TranslatorInterpolator) {
+    this.configuration.set({ ...this.configuration.get(), interpolator })
+  }
+
+  config(configuration: Partial<TranslatorConfig>) {
+    this.configuration.set({ ...this.configuration.get(), ...configuration })
+  }
+
+  get(key: string, options?: TranslatorGetOptions): string {
+    const language = options?.language ?? this.getLanguage()
+    const fallbackLanguage =
+      options?.fallbackLanguage ?? this.getFallbackLanguage()
+    const replacements = this.parseReplacements(options?.replace ?? {})
+    const templatize =
+      options?.templatize ?? this.configuration.get().templatize
+    const formatter = options?.formatter ?? this.configuration.get().formatter
+    const interpolator =
+      options?.interpolator ?? this.configuration.get().interpolator
+
+    let template = get(this.getTranslationsForLanguage(language), key)
+
+    if (
+      template === undefined &&
+      fallbackLanguage !== undefined &&
+      fallbackLanguage !== language
+    ) {
+      template = get(this.getTranslationsForLanguage(fallbackLanguage), key)
+    }
+
+    if (typeof template === "string") {
+      if (templatize) {
+        return this.templatize(
+          language,
+          template,
+          replacements,
+          interpolator,
+          formatter
+        )
+      }
+
+      return template
+    }
+
+    return this.configuration.get().placeholder(language, key, replacements)
+  }
+
+  has(key: string, options?: TranslatorHasOptions): boolean {
+    const translation = this.get(key, { templatize: false, ...options })
+    const language = options?.language ?? this.getLanguage()
+
+    return (
+      translation != this.configuration.get().placeholder(language, key, {})
     )
-  }
-
-  has(key: string, language?: string, fallbackLanguage?: string): boolean {
-    language = language ?? this.getLanguage()
-    fallbackLanguage = fallbackLanguage ?? this.getFallbackLanguage()
-
-    const translation = this.get(key, [], language, fallbackLanguage)
-
-    return translation !== `{ ${language}.${key} }`
   }
 
   listen(callback: TranslatorCallback, notifyImmediately?: boolean) {
     this.translations.listen(() => callback(this), notifyImmediately)
-    this.language.listen(() => callback(this), notifyImmediately)
-    this.fallbackLanguage.listen(() => callback(this), notifyImmediately)
+    this.configuration.listen(() => callback(this), notifyImmediately)
   }
 
-  scope(scope: string): TranslateFunction {
+  t(options?: TranslateFunctionFactoryOptions): TranslateFunction {
     const translate: TranslateFunction = (
       key: string,
-      replacements?: any[],
-      language?: string
+      optionsOverride?: TranslatorGetOptions
     ) => {
-      const path = key.startsWith("~")
+      const scope = options?.scope
+
+      key = key.startsWith("~")
         ? key.replace("~", "")
         : compact([scope, key]).join(".")
 
-      return this.get(path, replacements, language)
+      return this.get(key, { ...options, ...optionsOverride })
     }
 
     return translate
+  }
+
+  protected templatize(
+    language: string,
+    template: string,
+    replacements: Record<any, any>,
+    interpolator: TranslatorInterpolator,
+    formatter: TranslatorFormatter
+  ) {
+    const text = Object.keys(replacements).reduce((template, match) => {
+      const replacement = formatter(language, replacements[match], replacements)
+
+      return interpolator(template, match, replacement)
+    }, template)
+
+    return text
+  }
+
+  protected parseReplacements(
+    replacements: TranslatorReplacements
+  ): Record<any, any> {
+    if (Array.isArray(replacements)) {
+      replacements = Object.fromEntries(
+        replacements.map((value, index) => [index + 1, value])
+      )
+    }
+
+    return replacements
   }
 }
