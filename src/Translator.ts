@@ -11,8 +11,9 @@ import {
   TranslatorOptions,
   TranslatorFormatter,
   TranslatorInterpolator,
+  TranslatorCallbackUnsubscribe,
 } from "./types"
-import { compact, get, merge } from "lodash-es"
+import { compact, debounce, get, merge } from "lodash-es"
 import { createValue, ObservableValue } from "@corets/value"
 import { interpolator } from "./interpolator"
 import { formatter } from "./formatter"
@@ -27,6 +28,7 @@ export class Translator implements ObservableTranslator {
       language: options.language,
       fallbackLanguage: options?.fallbackLanguage,
       templatize: options?.templatize ?? true,
+      debounceChanges: options?.debounceChanges ?? 10,
       formatter: options?.formatter ?? formatter,
       interpolator: options?.interpolator ?? interpolator,
       placeholder: options?.placeholder ?? placeholder,
@@ -149,9 +151,27 @@ export class Translator implements ObservableTranslator {
     )
   }
 
-  listen(callback: TranslatorCallback, notifyImmediately?: boolean) {
-    this.translations.listen(() => callback(this), notifyImmediately)
-    this.configuration.listen(() => callback(this), notifyImmediately)
+  listen(
+    callback: TranslatorCallback,
+    notifyImmediately?: boolean
+  ): TranslatorCallbackUnsubscribe {
+    const listener =
+      this.configuration.get().debounceChanges > 0
+        ? debounce(
+            () => callback(this),
+            this.configuration.get().debounceChanges
+          )
+        : () => callback(this)
+
+    const unsubscribeCallbacks = [
+      this.translations.listen(listener, notifyImmediately),
+      this.configuration.listen(listener, notifyImmediately),
+    ]
+
+    const unsubscribe = () =>
+      unsubscribeCallbacks.forEach((callback) => callback())
+
+    return unsubscribe
   }
 
   t(options?: TranslateFunctionFactoryOptions): TranslateFunction {

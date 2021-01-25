@@ -11,6 +11,7 @@ export type TranslatorConfig = {
   language: string
   fallbackLanguage?: string
   templatize: boolean
+  debounceChanges: number
   interpolator: TranslatorInterpolator
   formatter: TranslatorFormatter
   placeholder: TranslatorPlaceholder
@@ -19,9 +20,10 @@ export type TranslatorConfig = {
 export type TranslatorOptions = {
   language: string
   fallbackLanguage?: string
+  templatize?: boolean
+  debounceChanges?: number
   interpolator?: TranslatorInterpolator
   formatter?: TranslatorFormatter
-  templatize?: boolean
   placeholder?: TranslatorPlaceholder
 }
 
@@ -60,6 +62,7 @@ export type TranslatorPlaceholder = (
 ) => string
 
 export type TranslatorCallback = (translator: ObservableTranslator) => void
+export type TranslatorCallbackUnsubscribe = () => void
 
 export type TranslateFunction = (
   key: string,
@@ -99,6 +102,9 @@ export interface ObservableTranslator {
   get(key: string, options?: TranslatorGetOptions): string
   has(key: string, options?: TranslatorHasOptions): boolean
 
-  listen(callback: TranslatorCallback, notifyImmediately?: boolean)
+  listen(
+    callback: TranslatorCallback,
+    notifyImmediately?: boolean
+  ): TranslatorCallbackUnsubscribe
   t(options?: TranslateFunctionFactoryOptions): TranslateFunction
 }

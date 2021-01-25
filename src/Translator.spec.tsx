@@ -3,6 +3,7 @@ import {
   TranslatorFormatter,
   TranslatorInterpolator,
 } from "./index"
+import { createTimeout } from "@corets/promise-helpers"
 
 describe("Translator", () => {
   it("accepts language and translations", () => {
@@ -243,11 +244,11 @@ describe("Translator", () => {
   it("listens", () => {
     const translator = new Translator(
       { en: { foo: "bar", yolo: { swag: "baz" } } },
-      { language: "en" }
+      { language: "en", debounceChanges: 0 }
     )
     const callback = jest.fn()
 
-    translator.listen(callback)
+    const unsubscribe = translator.listen(callback)
 
     expect(callback).toHaveBeenCalledTimes(2)
     expect(callback).toHaveBeenCalledWith(translator)
@@ -262,6 +263,11 @@ describe("Translator", () => {
     expect(callback).toHaveBeenCalledTimes(5)
 
     translator.addTranslations({ en: { foo: "bar" } })
+    expect(callback).toHaveBeenCalledTimes(5)
+
+    unsubscribe()
+
+    translator.setLanguage("en")
     expect(callback).toHaveBeenCalledTimes(5)
   })
 
@@ -410,5 +416,44 @@ describe("Translator", () => {
     const t2 = translator.t({ interpolator })
 
     expect(t2("foo", { replace: ["bar"] })).toBe("foo bar")
+  })
+
+  it("debounces changes", async () => {
+    const translator = new Translator(
+      {},
+      { language: "en", debounceChanges: 20 }
+    )
+
+    expect(
+      new Translator({}, { language: "en" }).configuration.get().debounceChanges
+    ).toBe(10)
+    expect(translator.configuration.get().debounceChanges).toBe(20)
+
+    const listener = jest.fn()
+    const unsubscribe = translator.listen(listener)
+
+    expect(listener).toHaveBeenCalledTimes(0)
+
+    await createTimeout(20)
+
+    expect(listener).toHaveBeenCalledTimes(1)
+
+    translator.setLanguage("de")
+
+    expect(listener).toHaveBeenCalledTimes(1)
+
+    await createTimeout(20)
+
+    expect(listener).toHaveBeenCalledTimes(2)
+
+    unsubscribe()
+
+    translator.setLanguage("ru")
+
+    expect(listener).toHaveBeenCalledTimes(2)
+
+    await createTimeout(20)
+
+    expect(listener).toHaveBeenCalledTimes(2)
   })
 })
