@@ -2,4 +2,4 @@
 
 <p align="center"><b><a href="https://corets.github.io/translator">Documentation</a></b><br/><br/><br/></p>
 
-<p align="center">Simple library to handle translations</p>
+<p align="center">Simple translation library</p>

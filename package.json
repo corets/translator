@@ -1,6 +1,6 @@
 {
   "name": "@corets/translator",
-  "description": "Simple library to handle translations",
+  "description": "Simple translation library",
   "version": "0.0.1-6",
   "author": "Maxim Kott",
   "license": "MIT",
