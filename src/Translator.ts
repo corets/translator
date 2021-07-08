@@ -12,6 +12,7 @@ import {
   TranslatorFormatter,
   TranslatorInterpolator,
   TranslatorCallbackUnsubscribe,
+  TranslatorListenOptions,
 } from "./types"
 import { compact, debounce, get, merge } from "lodash-es"
 import { createValue, ObservableValue } from "@corets/value"
@@ -24,7 +25,7 @@ export class Translator implements ObservableTranslator {
   translations: ObservableValue<Translations>
 
   constructor(translations: Translations, options: TranslatorOptions) {
-    this.configuration = createValue({
+    this.configuration = createValue<TranslatorConfig>({
       language: options.language,
       fallbackLanguage: options?.fallbackLanguage,
       interpolate: options?.interpolate ?? true,
@@ -153,7 +154,7 @@ export class Translator implements ObservableTranslator {
 
   listen(
     callback: TranslatorCallback,
-    notifyImmediately?: boolean
+    options?: TranslatorListenOptions
   ): TranslatorCallbackUnsubscribe {
     const listener =
       this.configuration.get().debounceChanges > 0
@@ -164,8 +165,8 @@ export class Translator implements ObservableTranslator {
         : () => callback(this)
 
     const unsubscribeCallbacks = [
-      this.translations.listen(listener, notifyImmediately),
-      this.configuration.listen(listener, notifyImmediately),
+      this.translations.listen(listener, options),
+      this.configuration.listen(listener, options),
     ]
 
     const unsubscribe = () =>

@@ -110,7 +110,11 @@ export interface ObservableTranslator {
 
   listen(
     callback: TranslatorCallback,
-    notifyImmediately?: boolean
+    options?: TranslatorListenOptions
   ): TranslatorCallbackUnsubscribe
   t(options?: TranslateFunctionFactoryOptions): TranslateFunction
+}
+
+export type TranslatorListenOptions = {
+  immediate?: boolean
 }

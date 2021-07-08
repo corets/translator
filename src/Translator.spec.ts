@@ -268,25 +268,38 @@ describe("Translator", () => {
 
     const unsubscribe = translator.listen(callback)
 
-    expect(callback).toHaveBeenCalledTimes(2)
-    expect(callback).toHaveBeenCalledWith(translator)
+    expect(callback).toHaveBeenCalledTimes(0)
 
     translator.setLanguage("de")
-    expect(callback).toHaveBeenCalledTimes(3)
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenCalledWith(translator)
 
     translator.setTranslations({ en: { foo: "bar", yolo: { swag: "bar" } } })
-    expect(callback).toHaveBeenCalledTimes(4)
+    expect(callback).toHaveBeenCalledTimes(2)
 
     translator.addTranslations({ en: { key: "value" } })
-    expect(callback).toHaveBeenCalledTimes(5)
+    expect(callback).toHaveBeenCalledTimes(3)
 
     translator.addTranslations({ en: { foo: "bar" } })
-    expect(callback).toHaveBeenCalledTimes(5)
+    expect(callback).toHaveBeenCalledTimes(3)
 
     unsubscribe()
 
     translator.setLanguage("en")
-    expect(callback).toHaveBeenCalledTimes(5)
+    expect(callback).toHaveBeenCalledTimes(3)
+  })
+
+  it("listens immediately", () => {
+    const translator = new Translator(
+      { en: { foo: "bar", yolo: { swag: "baz" } } },
+      { language: "en", debounceChanges: 0 }
+    )
+    const callback = jest.fn()
+
+    translator.listen(callback, { immediate: true })
+
+    expect(callback).toHaveBeenCalledTimes(2)
+    expect(callback).toHaveBeenCalledWith(translator)
   })
 
   it("creates translate function", () => {
@@ -450,7 +463,7 @@ describe("Translator", () => {
     expect(translator.configuration.get().debounceChanges).toBe(20)
 
     const listener = jest.fn()
-    const unsubscribe = translator.listen(listener)
+    const unsubscribe = translator.listen(listener, { immediate: true })
 
     expect(listener).toHaveBeenCalledTimes(0)
 
