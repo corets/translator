@@ -15,9 +15,9 @@ import {
 } from "./types"
 import { compact, debounce, get, merge } from "lodash-es"
 import { createValue, ObservableValue } from "@corets/value"
-import { interpolator } from "./interpolator"
-import { formatter } from "./formatter"
-import { placeholder } from "./placeholder"
+import { defaultTranslatorInterpolator } from "./defaultTranslatorInterpolator"
+import { defaultTranslatorFormatter } from "./defaultTranslatorFormatter"
+import { defaultTranslatorPlaceholder } from "./defaultTranslatorPlaceholder"
 
 export class Translator implements ObservableTranslator {
   configuration: ObservableValue<TranslatorConfig>
@@ -27,11 +27,11 @@ export class Translator implements ObservableTranslator {
     this.configuration = createValue({
       language: options.language,
       fallbackLanguage: options?.fallbackLanguage,
-      templatize: options?.templatize ?? true,
+      interpolate: options?.interpolate ?? true,
       debounceChanges: options?.debounceChanges ?? 10,
-      formatter: options?.formatter ?? formatter,
-      interpolator: options?.interpolator ?? interpolator,
-      placeholder: options?.placeholder ?? placeholder,
+      formatter: options?.formatter ?? defaultTranslatorFormatter,
+      interpolator: options?.interpolator ?? defaultTranslatorInterpolator,
+      placeholder: options?.placeholder ?? defaultTranslatorPlaceholder,
     })
 
     this.translations = createValue(translations)
@@ -109,8 +109,8 @@ export class Translator implements ObservableTranslator {
     const fallbackLanguage =
       options?.fallbackLanguage ?? this.getFallbackLanguage()
     const replacements = this.parseReplacements(options?.replace ?? {})
-    const templatize =
-      options?.templatize ?? this.configuration.get().templatize
+    const interpolate =
+      options?.interpolate ?? this.configuration.get().interpolate
     const formatter = options?.formatter ?? this.configuration.get().formatter
     const interpolator =
       options?.interpolator ?? this.configuration.get().interpolator
@@ -126,8 +126,8 @@ export class Translator implements ObservableTranslator {
     }
 
     if (typeof template === "string") {
-      if (templatize) {
-        return this.templatize(
+      if (interpolate) {
+        return this.interpolate(
           language,
           template,
           replacements,
@@ -143,7 +143,7 @@ export class Translator implements ObservableTranslator {
   }
 
   has(key: string, options?: TranslatorHasOptions): boolean {
-    const translation = this.get(key, { templatize: false, ...options })
+    const translation = this.get(key, { interpolate: false, ...options })
     const language = options?.language ?? this.getLanguage()
 
     return (
@@ -191,7 +191,7 @@ export class Translator implements ObservableTranslator {
     return translate
   }
 
-  protected templatize(
+  protected interpolate(
     language: string,
     template: string,
     replacements: Record<any, any>,

@@ -1,4 +1,5 @@
 import { ObservableValue } from "@corets/value"
+import { ObjectAccessor } from "@corets/accessor"
 
 export type Translations = { [K: string]: object }
 
@@ -7,10 +8,15 @@ export type CreateTranslator = (
   options: TranslatorOptions
 ) => ObservableTranslator
 
+export type CreateTranslatorAccessor = <TTranslations extends object>(
+  translator: ObservableTranslator,
+  translations: TTranslations
+) => ObjectAccessor<TTranslations, string, [TranslatorGetOptions?]>
+
 export type TranslatorConfig = {
   language: string
   fallbackLanguage?: string
-  templatize: boolean
+  interpolate: boolean
   debounceChanges: number
   interpolator: TranslatorInterpolator
   formatter: TranslatorFormatter
@@ -20,7 +26,7 @@ export type TranslatorConfig = {
 export type TranslatorOptions = {
   language: string
   fallbackLanguage?: string
-  templatize?: boolean
+  interpolate?: boolean
   debounceChanges?: number
   interpolator?: TranslatorInterpolator
   formatter?: TranslatorFormatter
@@ -31,7 +37,7 @@ export type TranslatorGetOptions = {
   replace?: TranslatorReplacements
   language?: string
   fallbackLanguage?: string
-  templatize?: boolean
+  interpolate?: boolean
   formatter?: TranslatorFormatter
   interpolator?: TranslatorInterpolator
 }
@@ -73,7 +79,7 @@ export type TranslateFunctionFactoryOptions = {
   scope?: string
   language?: string
   fallbackLanguage?: string
-  templatize?: boolean
+  interpolate?: boolean
   formatter?: TranslatorFormatter
   interpolator?: TranslatorInterpolator
 }

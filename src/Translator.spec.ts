@@ -31,11 +31,11 @@ describe("Translator", () => {
 
   it("translates text", () => {
     const translator = new Translator(
-      { en: { foo: "bar $1" } },
+      { en: { foo: "bar {{1}}" } },
       { language: "en" }
     )
 
-    expect(translator.get("foo")).toBe("bar $1")
+    expect(translator.get("foo")).toBe("bar {{1}}")
     expect(translator.get("foo", { replace: ["baz"] })).toBe("bar baz")
     expect(translator.get("foo", { replace: [1337] })).toBe("bar 1337")
     expect(translator.get("foo", { replace: ["baz"] })).toBe("bar baz")
@@ -49,7 +49,7 @@ describe("Translator", () => {
 
   it("translates text with a replacements array", () => {
     const translator = new Translator(
-      { en: { foo: "bar $1" } },
+      { en: { foo: "bar {{1}}" } },
       { language: "en" }
     )
 
@@ -58,16 +58,34 @@ describe("Translator", () => {
 
   it("translates text with a replacements object", () => {
     const translator = new Translator(
-      { en: { foo: "bar $key" } },
+      { en: { foo: "bar {{key}}" } },
       { language: "en" }
     )
 
     expect(translator.get("foo", { replace: { key: "a" } })).toBe("bar a")
   })
 
+  it("translates text with spaces inside replacement placeholder", () => {
+    const translator = new Translator(
+      { en: { foo: "bar {{  key      }}" } },
+      { language: "en" }
+    )
+
+    expect(translator.get("foo", { replace: { key: "a" } })).toBe("bar a")
+  })
+
+  it("translates text without greedy matching", () => {
+    const translator = new Translator(
+      { en: { foo: "bar {{{key}}}" } },
+      { language: "en" }
+    )
+
+    expect(translator.get("foo", { replace: { key: "a" } })).toBe("bar {a}")
+  })
+
   it("translates text with a custom formatter", () => {
     const translator = new Translator(
-      { en: { foo: "bar $key" } },
+      { en: { foo: "bar {{key}}" } },
       {
         language: "en",
         formatter: (language, replacement, replacements) =>
@@ -179,13 +197,13 @@ describe("Translator", () => {
     expect(translator.getFallbackLanguage()).toBe("ru")
   })
 
-  it("allows to disable templatizing", () => {
+  it("allows to disable interpolation", () => {
     const translator = new Translator(
-      { en: { foo: "baz $1" } },
-      { language: "en", templatize: false }
+      { en: { foo: "baz {{1}}" } },
+      { language: "en", interpolate: false }
     )
 
-    expect(translator.get("foo", { replace: ["bar"] })).toBe("baz $1")
+    expect(translator.get("foo", { replace: ["bar"] })).toBe("baz {{1}}")
   })
 
   it("gets and set translations", () => {
@@ -324,7 +342,7 @@ describe("Translator", () => {
     const translator = new Translator({}, { language: "en" })
     const language = "foo"
     const fallbackLanguage = "bar"
-    const templatize = false
+    const interpolate = false
     const interpolator: any = () => null
     const formatter: any = () => null
     const placeholder: any = () => null
@@ -332,7 +350,7 @@ describe("Translator", () => {
     translator.config({
       language,
       fallbackLanguage,
-      templatize,
+      interpolate,
       interpolator,
       formatter,
       placeholder,
@@ -340,7 +358,7 @@ describe("Translator", () => {
 
     expect(translator.getLanguage()).toBe(language)
     expect(translator.getFallbackLanguage()).toBe(fallbackLanguage)
-    expect(translator.configuration.get().templatize).toBe(templatize)
+    expect(translator.configuration.get().interpolate).toBe(interpolate)
     expect(translator.getInterpolator() === interpolator).toBe(true)
     expect(translator.getFormatter() === formatter).toBe(true)
     expect(translator.configuration.get().placeholder === placeholder).toBe(
@@ -348,32 +366,34 @@ describe("Translator", () => {
     )
   })
 
-  it("can disable templatizing at runtime", () => {
+  it("can disable interpolation at runtime", () => {
     const translator = new Translator(
-      { en: { foo: "foo $1" } },
+      { en: { foo: "foo {{1}}" } },
       { language: "en" }
     )
 
-    expect(translator.get("foo", { replace: ["bar"], templatize: false })).toBe(
-      "foo $1"
-    )
-    expect(translator.get("foo", { replace: ["bar"], templatize: true })).toBe(
+    expect(
+      translator.get("foo", { replace: ["bar"], interpolate: false })
+    ).toBe("foo {{1}}")
+    expect(translator.get("foo", { replace: ["bar"], interpolate: true })).toBe(
       "foo bar"
     )
 
     const t1 = translator.t()
     expect(t1("foo", { replace: ["bar"] })).toBe("foo bar")
-    expect(t1("foo", { replace: ["bar"], templatize: false })).toBe("foo $1")
+    expect(t1("foo", { replace: ["bar"], interpolate: false })).toBe(
+      "foo {{1}}"
+    )
 
-    const t2 = translator.t({ templatize: false })
+    const t2 = translator.t({ interpolate: false })
 
-    expect(t2("foo", { replace: ["bar"] })).toBe("foo $1")
-    expect(t2("foo", { replace: ["bar"], templatize: true })).toBe("foo bar")
+    expect(t2("foo", { replace: ["bar"] })).toBe("foo {{1}}")
+    expect(t2("foo", { replace: ["bar"], interpolate: true })).toBe("foo bar")
   })
 
   it("can replace formatter at runtime", () => {
     const translator = new Translator(
-      { en: { foo: "foo $1" } },
+      { en: { foo: "foo {{1}}" } },
       { language: "en" }
     )
     const formatter: TranslatorFormatter = (
