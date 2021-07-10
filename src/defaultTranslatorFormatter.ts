@@ -1,4 +1,4 @@
-import { isObjectLike } from "lodash-es"
+import { isObjectLike } from "lodash"
 import { TranslatorFormatter } from "./types"
 
 export const defaultTranslatorFormatter: TranslatorFormatter = (
