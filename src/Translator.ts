@@ -14,7 +14,10 @@ import {
   TranslatorCallbackUnsubscribe,
   TranslatorListenOptions,
 } from "./types"
-import { compact, debounce, get, merge } from "lodash"
+import compact from "lodash/compact"
+import debounce from "lodash/debounce"
+import get from "lodash/get"
+import merge from "lodash/merge"
 import { createValue, ObservableValue } from "@corets/value"
 import { defaultTranslatorInterpolator } from "./defaultTranslatorInterpolator"
 import { defaultTranslatorFormatter } from "./defaultTranslatorFormatter"
