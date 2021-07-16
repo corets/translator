@@ -19,9 +19,9 @@ import debounce from "lodash/debounce"
 import get from "lodash/get"
 import merge from "lodash/merge"
 import { createValue, ObservableValue } from "@corets/value"
-import { defaultTranslatorInterpolator } from "./defaultTranslatorInterpolator"
-import { defaultTranslatorFormatter } from "./defaultTranslatorFormatter"
-import { defaultTranslatorPlaceholder } from "./defaultTranslatorPlaceholder"
+import { translatorInterpolator } from "./translatorInterpolator"
+import { translatorFormatter } from "./translatorFormatter"
+import { translatorPlaceholder } from "./translatorPlaceholder"
 
 export class Translator implements ObservableTranslator {
   configuration: ObservableValue<TranslatorConfig>
@@ -33,9 +33,9 @@ export class Translator implements ObservableTranslator {
       fallbackLanguage: options?.fallbackLanguage,
       interpolate: options?.interpolate ?? true,
       debounceChanges: options?.debounceChanges ?? 10,
-      formatter: options?.formatter ?? defaultTranslatorFormatter,
-      interpolator: options?.interpolator ?? defaultTranslatorInterpolator,
-      placeholder: options?.placeholder ?? defaultTranslatorPlaceholder,
+      formatter: options?.formatter ?? translatorFormatter,
+      interpolator: options?.interpolator ?? translatorInterpolator,
+      placeholder: options?.placeholder ?? translatorPlaceholder,
     })
 
     this.translations = createValue(translations)

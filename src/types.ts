@@ -58,7 +58,7 @@ export type TranslatorInterpolator = (
 export type TranslatorFormatter = (
   language: string,
   replacement: any,
-  replacements: Record<any, any>
+  otherReplacements: Record<any, any>
 ) => string
 
 export type TranslatorPlaceholder = (

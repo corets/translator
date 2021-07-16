@@ -1,12 +1,12 @@
 import isObjectLike from "lodash/isObjectLike"
 import { TranslatorFormatter } from "./types"
 
-export const defaultTranslatorFormatter: TranslatorFormatter = (
+export const translatorFormatter: TranslatorFormatter = (
   language,
   replacement,
-  replacements
+  otherReplacements
 ) => {
-  if (Array.isArray(replacement)) return JSON.stringify(replacement)
+  if (Array.isArray(replacement)) return replacement.join(", ")
   if (isObjectLike(replacement)) return JSON.stringify(replacement)
 
   return typeof replacement === "string"

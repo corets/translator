@@ -1,6 +1,6 @@
 import { TranslatorInterpolator } from "./types"
 
-export const defaultTranslatorInterpolator: TranslatorInterpolator = (
+export const translatorInterpolator: TranslatorInterpolator = (
   text,
   match,
   replacement

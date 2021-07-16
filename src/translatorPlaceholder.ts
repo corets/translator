@@ -1,6 +1,6 @@
 import { TranslatorPlaceholder } from "./types"
 
-export const defaultTranslatorPlaceholder: TranslatorPlaceholder = (
+export const translatorPlaceholder: TranslatorPlaceholder = (
   language,
   key,
   replacements
