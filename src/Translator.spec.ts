@@ -40,7 +40,7 @@ describe("Translator", () => {
     expect(translator.get("foo", { replace: [1337] })).toBe("bar 1337")
     expect(translator.get("foo", { replace: ["baz"] })).toBe("bar baz")
     expect(translator.get("foo", { replace: [["yolo", "swag"]] })).toBe(
-      `bar ["yolo","swag"]`
+      `bar yolo, swag`
     )
     expect(translator.get("foo", { replace: [{ yolo: "swag" }] })).toBe(
       `bar {"yolo":"swag"}`
@@ -58,11 +58,13 @@ describe("Translator", () => {
 
   it("translates text with a replacements object", () => {
     const translator = new Translator(
-      { en: { foo: "bar {{key}}" } },
+      { en: { foo: 'bar {{first}} "{{second}}"' } },
       { language: "en" }
     )
 
-    expect(translator.get("foo", { replace: { key: "a" } })).toBe("bar a")
+    expect(
+      translator.get("foo", { replace: { first: "a", second: ["foo", "bar"] } })
+    ).toBe('bar a "foo, bar"')
   })
 
   it("translates text with spaces inside replacement placeholder", () => {
