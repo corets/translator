@@ -20,7 +20,7 @@
     "/dist"
   ],
   "repository": "github:corets/translator",
-  "homepage": "https://corets.github.io/translator",
+  "homepage": "https://docs.corets.io/services/translator",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
