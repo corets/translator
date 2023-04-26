@@ -2,7 +2,11 @@ import { ObservableValue } from "@corets/value"
 import { ObjectAccessor } from "@corets/accessor"
 
 export type Translations = { [K: string]: object }
-export type TranslatorAccessor<TTranslations extends object> = ObjectAccessor<TTranslations, string, [TranslatorGetOptions?]>
+export type TranslatorAccessor<TTranslations extends object> = ObjectAccessor<
+  TTranslations,
+  string,
+  [TranslatorGetOptions?]
+>
 
 export type CreateTranslator = (
   translations: Translations,
@@ -41,7 +45,7 @@ export type TranslatorGetOptions = {
   interpolate?: boolean
   formatter?: TranslatorFormatter
   interpolator?: TranslatorInterpolator
-}
+} & Record<any, any>
 
 export type TranslatorHasOptions = {
   language?: string
