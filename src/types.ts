@@ -45,7 +45,7 @@ export type TranslatorGetOptions = {
   interpolate?: boolean
   formatter?: TranslatorFormatter
   interpolator?: TranslatorInterpolator
-} & Record<any, any>
+}
 
 export type TranslatorHasOptions = {
   language?: string
